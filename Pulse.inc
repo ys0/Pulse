@@ -10,14 +10,14 @@
 		private $primary_key = 'id';
 		public $data = Array();
 		
-		public function __construct($array) {
+		public function __construct($array) { 
 			if (is_array($array)) {
 				if (isset($array['table'])) {
 					$this->table = $array['table'];
 				}
 				
-				if(isset($array['primary'])) {
-					$this->primary_key = $array['primary'];
+				if(isset($array['primary_key'])) {
+					$this->primary_key = $array['primary_key'];
 				}
 				
 				if (isset($array['column']) && isset($array['value'])) {
@@ -77,6 +77,96 @@
 			return $this->table;
 		}
 		
+		public function dropTable($table = null) {
+			if($table == null) $table = $this->table;
+				
+			$query = "DROP TABLE IF EXISTS " . $table;
+			$result = mysql_query($query);
+				
+			if(!$this->checkError($result) && $table == $this->table) {
+				$this->table = null;
+			}
+		}
+		
+		public function createTable($table, $columns) {
+			$query = 'CREATE TABLE IF NOT EXISTS `' . $table . '` ( ';
+			
+			$fields = Array();
+			
+			$primary_key = null;
+			$auto_increment = null;
+			
+			foreach($columns as $column) {
+				if(isset($column['name']) && isset($column['type'])) {
+					$field = '`' . $column['name'] . '` ' . $column['type'];
+					
+					if(isset($column['option'])) {
+						$field .= '(' . $column['option'] . ')';
+					}
+					
+					$field .= ' ';
+					
+					if(isset($column['null'])) {
+						if($column['null']) {
+							$field .= 'DEFAULT NULL ';
+						} 
+						else {
+							$field .= 'NOT NULL ';
+						}
+					}
+					else {
+						$field .= 'NOT NULL ';
+					}
+					
+					if(isset($column['auto_increment'])) {
+						if($column['auto_increment']) {
+							$field .= 'AUTO_INCREMENT ';
+							$auto_increment = true;
+						}
+					}
+					
+					if(isset($column['primary_key'])) {
+						if($column['primary_key']) {
+							$primary_key = $column['name'];
+						}
+					}
+					
+					if(isset($column['unique'])) {
+						if($column['unique']) {
+							$field .= 'UNIQUE  ';
+						}
+					}
+						
+					
+					if(isset($column['append'])) {
+						$field .= $column['append'];
+					}
+					
+					$fields[] = $field;
+				}
+			}
+			
+			$query .= join(',', $fields);
+
+			if($primary_key != null) {
+				$query .= ', PRIMARY KEY (`' . $primary_key . '`) ';
+			}
+			
+			$query .= ') ';
+			
+			$query .= 'ENGINE=InnoDB DEFAULT CHARSET=utf8 ';
+			
+			if($auto_increment) {
+				$query .= 'AUTO_INCREMENT = 1 ';
+			}
+			
+			$result = mysql_query($query);
+		
+			if(!$this->checkError($result)){
+				//$this->table = $table;
+			}
+		}
+		
 		public function getColumns() {
 			$query = 'SHOW COLUMNS FROM `' . $this->table . '`';
 			$result = mysql_query($query);
@@ -85,6 +175,10 @@
 				$columns = Array();
 				while($record = mysql_fetch_array($result)) {
 					$columns[] = $record['Field'];
+					
+					if($record['Key'] == 'PRI') {
+						$this->primary_key = $record['Field'];
+					}
 				}
 				
 				$this->last_query = $query;
@@ -156,10 +250,6 @@
 			}
 		}
 		
-		public function getDatabase() {
-			return $this->database;
-		}
-		
 		private function secureData() {
 			$data = Array();
 			foreach(array_keys($this->data) as $key){
@@ -220,12 +310,17 @@
 		
 		public function delete() {
 			$data = $this->secureData();
-			$query = "DELETE FROM `".$this->table."` WHERE `" . $this->primary_key . "` = '".$data[$this->primary_key]."'  ".$this->append;
+			
+			$query = "DELETE FROM `" . $this->table . "` WHERE `" . $this->primary_key . "` = '" . $data[$this->primary_key] . "'  " . $this->append;
 			$result = mysql_query($query);
 		
 			$this->checkError($result);
 			
 			$this->last_query = $query;
+		}
+		
+		public function read() {
+			return $this->data;
 		}
 		
 		public function getAll() { //not optimized
@@ -239,6 +334,37 @@
 		
 			return $multiplearray;
 		}
+				
+		public function dropDatabase($database = null) {
+			if($database == null) $database = $this->database;
+			
+			$query = "DROP DATABASE IF EXISTS " . $database;
+			$result = mysql_query($query);
+			
+			if(!$this->checkError($result) && $database == $this->database) {
+				$this->database = null;
+			}
+		}
 		
+		public function createDatabase($database = null) {
+			$query = "CREATE DATABASE IF NOT EXISTS " . $database;
+			$result = mysql_query($query);
+				
+			if(!$this->checkError($result)){
+				//$this->database = $database;
+			}
+		}
+		
+		public function getDatabase() {
+			return $this->database;
+		}
+		
+		public function setDatabase($database) {
+			$this->database = $database;
+			
+			$query = mysql_select_db($database, $this->link);
+			
+			$this->checkError($result);
+		}
 	}
 ?>

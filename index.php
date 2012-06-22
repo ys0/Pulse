@@ -1,6 +1,13 @@
 <?php 
 	include 'Pulse.inc';
 	
+	function debug($pulse) {
+		echo '<br/>';
+		echo $pulse->getLastQuery();
+		echo $pulse->getLastError();
+		echo '<br/>';
+	}
+	
 	/*
 	 * $link = mysql_connect('localhost'. ''. '');
 	 * mysql_select_db('test', $link);
@@ -12,29 +19,23 @@
 			'password' => '',
 			'database' => 'test',
 			'table' => 'people',
-			//'link' => $link,
+			//'link' => $link, 	
 			//'column' => 'name',
 			//'value' => 'ys0'
 	));
 	
 	$myPulse->load('name', 'ys0');
 	
-	echo $myPulse->getLastQuery();
-	echo $myPulse->getLastError();
-	echo '<br/>';
+	debug($myPulse);
 	
 	echo $myPulse->data['name'] . ' is ' . $myPulse->data['age'] . ' years old.';
 	
-	echo '<br/>';
-	echo $myPulse->getLastQuery();
-	echo $myPulse->getLastError();
+	debug($myPulse);
 	
 	$myPulse->data['age'] = rand(10, 50);
 	$myPulse->update();
 	
-	echo '<br/>';
-	echo $myPulse->getLastQuery();
-	echo $myPulse->getLastError();
+	debug($myPulse);
 
 	$newUser = new Pulse(Array(
 			'link' => $myPulse->getLink(),
@@ -47,18 +48,14 @@
 	$newUser->create();
 	$newUser->create(); //ops i create 2 record
 	
-	echo '<br/>';
-	echo $newUser->getLastQuery();
-	echo $newUser->getLastError();
+	debug($newUser);
 	
 	print_r($newUser->getAll());
 	
 	$newUser->load('name', 'one'); //it load only the first record found
 	$newUser->delete();
 	
-	echo '<br/>';
-	echo $newUser->getLastQuery();
-	echo $newUser->getLastError();
+	debug($newUser);
 	
 	print_r($newUser->getAll());
 	

@@ -7,6 +7,7 @@
 		private $link = null;
 		private $columns = Array();
 		private $database = null;
+		private $primary_key = 'id';
 		public $data = Array();
 		
 		public function __construct($array) {
@@ -15,18 +16,19 @@
 					$this->table = $array['table'];
 				}
 				
-				if (isset($array['column']) && isset($array['value'])) {
-					$this->load($array['column'], $array['value']);
-					echo 'a';
-				}
-				elseif (!isset($array['column']) && isset($array['value'])) {
-					$this->load('id', $array['id']);
-					echo 'b';
+				if(isset($array['primary'])) {
+					$this->primary_key = $array['primary'];
 				}
 				
-				if (isset($array['id'])) {
-					$this->load('id');
-					echo 'c';
+				if (isset($array['column']) && isset($array['value'])) {
+					$this->load($array['column'], $array['value']);
+				}
+				elseif (!isset($array['column']) && isset($array['value'])) {
+					$this->load($this->primary_key, $array['value']);
+				}
+				
+				if (isset($array[$this->primary_key])) {
+					$this->load($this->primary_key, $array[$this->primary_key]);
 				}
 				
 				if (isset($array['link'])) {
@@ -48,6 +50,14 @@
 			$this->checkError($query);
 			
 			return $this->link;
+		}
+		
+		public function setPrimaryKey($primary_key) {
+			$this->primary_key = $primary_key;
+		}
+		
+		public function getPrimaryKey() {
+			return $this->primary_key;
 		}
 		
 		public function setLink($link) {
@@ -83,13 +93,13 @@
 		}
 		
 		public function getIDs() {
-			$query = 'SELECT id FROM `' . $this->table . '` ' . $this->append;
+			$query = 'SELECT ' . $this->primary_key . ' FROM `' . $this->table . '` ' . $this->append;
 			$result = mysql_query($query);
 			
 			if (!$this->checkError($result)) {
 				$ids = Array();
 				while($record = mysql_fetch_array($result)) {
-					$ids[] = $record['id'];
+					$ids[] = $record[$this->primary_key];
 				}
 				
 				$this->last_query = $query;
@@ -124,7 +134,7 @@
 		public function load($column, $value = null) {
 			if ($value == null) {
 				$value = $column;
-				$column = 'id';
+				$column = $this->primary_key;
 			}
 			
 			$query = "SELECT * FROM `" . $this->table . "` WHERE `" . $column . "` = '" . $value . "' " . $this->append;
@@ -200,7 +210,7 @@
 				array_push($pieces, "`".$cols[$i]."` = '".$vals[$i]."'");
 			}
 		
-			$query = "UPDATE  `".$this->table."` SET ".join(', ', $pieces)." WHERE  `id` = '".$data['id']."' ".$this->append;
+			$query = "UPDATE  `".$this->table."` SET ".join(', ', $pieces)." WHERE  `" . $this->primary_key . "` = '".$data[$this->primary_key]."' ".$this->append;
 			$result = mysql_query($query);
 			
 			$this->checkError($result);
@@ -210,7 +220,7 @@
 		
 		public function delete() {
 			$data = $this->secureData();
-			$query = "DELETE FROM `".$this->table."` WHERE `id` = '".$data['id']."'  ".$this->append;
+			$query = "DELETE FROM `".$this->table."` WHERE `" . $this->primary_key . "` = '".$data[$this->primary_key]."'  ".$this->append;
 			$result = mysql_query($query);
 		
 			$this->checkError($result);
@@ -223,7 +233,7 @@
 		
 			$multiplearray = Array();
 			foreach($ids as $id) {
-				$p = new Pulse(Array('table' => $this->table, 'link' => $this->link, 'id' => $id));
+				$p = new Pulse(Array('table' => $this->table, 'link' => $this->link, $this->primary_key => $id));
 				array_push($multiplearray, $p->data);
 			}
 		

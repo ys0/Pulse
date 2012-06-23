@@ -323,7 +323,7 @@
 			return $this->data;
 		}
 		
-		public function getAll() { //not optimized
+		public function readAll() { //not optimized
 			$ids = $this->getIDs();
 		
 			$multiplearray = Array();

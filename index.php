@@ -44,28 +44,27 @@
 // 	$newUser->create();
 // 	$newUser->create(); //ops i create 2 record
 // 	debug($newUser);
-// 	print_r($newUser->getAll());
+// 	print_r($newUser->readAll());
 	
 // 	$newUser->load('name', 'one'); //it load only the first record found
 // 	$newUser->delete();
 // 	debug($newUser);
-// 	print_r($newUser->getAll());
+// 	print_r($newUser->readAll());
 	
 // 	$data = $pulse1->join($pulse2, 'field');
 // 	$data = $pulse1->join(Array($pulse2, $pulse3), Array('field1', 'field2'));
 // 	debug($newUser);
 	
-// 	$newUser->createDatabase('ganja');
+// 	$newUser->createDatabase('database1');
 // 	debug($newUser);
 	
-// 	$newUser->dropDatabase('puzza');
+// 	$newUser->dropDatabase('database1');
 // 	debug($newUser);
 
 	$myDB = new Pulse(Array(
 		'host' => 'localhost',
 		'username' => '',
-		'password' => '',
-		'database' => 'test'
+		'password' => ''
 	));
 
 	$myDB->createTable('people2', Array(

@@ -8,10 +8,10 @@
 		echo '<br/>';
 	}
 	
-	/*
-	 * $link = mysql_connect('localhost'. ''. '');
-	 * mysql_select_db('test', $link);
-	 */
+// 	/*
+// 	 * $link = mysql_connect('localhost'. ''. '');
+// 	 * mysql_select_db('test', $link);
+// 	 */
 	
 // 	$myPulse = new Pulse(Array(
 // 			'host' => 'localhost',
@@ -55,42 +55,58 @@
 // 	$data = $pulse1->join(Array($pulse2, $pulse3), Array('field1', 'field2'));
 // 	debug($newUser);
 	
-// 	$newUser->createDatabase('database1');
-// 	debug($newUser);
-	
-// 	$newUser->dropDatabase('database1');
+
+// 	$myDB = new Pulse(Array(
+// 		'host' => 'localhost',
+// 		'username' => '',
+// 		'password' => ''
+// 	));
+
+// 	$myDB->createDatabase('database1');
 // 	debug($newUser);
 
-	$myDB = new Pulse(Array(
+// 	$myDB->dropDatabase('database1');
+// 	debug($newUser);
+
+// 	$myDB->createTable('people2', Array(
+// 			Array(
+// 					'name' => 'id',
+// 					'type' => 'INT',
+// 					'option' => '11',
+// 					'auto_increment' => true,
+// 					'null' => false,
+// 					'primary_key' => true
+// 			),
+// 			Array(
+// 					'name' => 'name',
+// 					'type' => 'VARCHAR',
+// 					'option' => '30'
+// 			),
+// 			Array(
+// 					'name' => 'age',
+// 					'type' => 'INT',
+// 					'option' => '3'
+// 			),
+// 	));
+// 	debug($myDB);
+	
+// 	$myDB->dropTable('people2');
+// 	debug($myDB);
+
+	$myPulse = new Pulse(Array(
 		'host' => 'localhost',
 		'username' => '',
-		'password' => ''
+		'password' => '',
+		'database' => 'test',
+		'table' => 'people',
 	));
+	
+	$data = $myPulse->load(Array(
+		'column' => 'name',
+		'value' => 'ys0'	
+	))->read();
+	
+	print_r($data);
 
-	$myDB->createTable('people2', Array(
-			Array(
-					'name' => 'id',
-					'type' => 'INT',
-					'option' => '11',
-					'auto_increment' => true,
-					'null' => false,
-					'primary_key' => true
-			),
-			Array(
-					'name' => 'name',
-					'type' => 'VARCHAR',
-					'option' => '30'
-			),
-			Array(
-					'name' => 'age',
-					'type' => 'INT',
-					'option' => '3'
-			),
-	));
-	
-	debug($myDB);
-	
-	$myDB->dropTable('people2');
-	
-	debug($myDB);
+	debug($myPulse);
 ?>

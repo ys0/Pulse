@@ -16,7 +16,7 @@
 					$this->table = $array['table'];
 				}
 				
-				if(isset($array['primary_key'])) {
+				if (isset($array['primary_key'])) {
 					$this->primary_key = $array['primary_key'];
 				}
 				
@@ -41,6 +41,8 @@
 					$this->connect($this->database, $array['host'], $array['username'], $array['password']);
 				}
 			}
+			
+			return $this;
 		}
 		
 		public function connect($database, $host, $user, $password) {
@@ -49,11 +51,13 @@
 			
 			$this->checkError($query);
 			
-			return $this->link;
+			return $this;
 		}
 		
 		public function setPrimaryKey($primary_key) {
 			$this->primary_key = $primary_key;
+			
+			return $this;
 		}
 		
 		public function getPrimaryKey() {
@@ -62,6 +66,8 @@
 		
 		public function setLink($link) {
 			$this->link = $link;
+			
+			return $this;
 		}
 		
 		public function getLink() {
@@ -71,6 +77,8 @@
 		public function setTable($table) {
 			$this->table = $table;
 			$this->columns = $this->getColumns();
+			
+			return $this;
 		}
 		
 		public function getTable($table) {
@@ -78,14 +86,16 @@
 		}
 		
 		public function dropTable($table = null) {
-			if($table == null) $table = $this->table;
+			if ($table == null) $table = $this->table;
 				
 			$query = "DROP TABLE IF EXISTS " . $table;
 			$result = mysql_query($query);
 				
-			if(!$this->checkError($result) && $table == $this->table) {
+			if (!$this->checkError($result) && $table == $this->table) {
 				$this->table = null;
 			}
+			
+			return $this;
 		}
 		
 		public function createTable($table, $columns) {
@@ -97,17 +107,17 @@
 			$auto_increment = null;
 			
 			foreach($columns as $column) {
-				if(isset($column['name']) && isset($column['type'])) {
+				if (isset($column['name']) && isset($column['type'])) {
 					$field = '`' . $column['name'] . '` ' . $column['type'];
 					
-					if(isset($column['option'])) {
+					if (isset($column['option'])) {
 						$field .= '(' . $column['option'] . ')';
 					}
 					
 					$field .= ' ';
 					
-					if(isset($column['null'])) {
-						if($column['null']) {
+					if (isset($column['null'])) {
+						if ($column['null']) {
 							$field .= 'DEFAULT NULL ';
 						} 
 						else {
@@ -118,27 +128,27 @@
 						$field .= 'NOT NULL ';
 					}
 					
-					if(isset($column['auto_increment'])) {
-						if($column['auto_increment']) {
+					if (isset($column['auto_increment'])) {
+						if ($column['auto_increment']) {
 							$field .= 'AUTO_INCREMENT ';
 							$auto_increment = true;
 						}
 					}
 					
-					if(isset($column['primary_key'])) {
-						if($column['primary_key']) {
+					if (isset($column['primary_key'])) {
+						if ($column['primary_key']) {
 							$primary_key = $column['name'];
 						}
 					}
 					
-					if(isset($column['unique'])) {
-						if($column['unique']) {
+					if (isset($column['unique'])) {
+						if ($column['unique']) {
 							$field .= 'UNIQUE  ';
 						}
 					}
 						
 					
-					if(isset($column['append'])) {
+					if (isset($column['append'])) {
 						$field .= $column['append'];
 					}
 					
@@ -148,7 +158,7 @@
 			
 			$query .= join(',', $fields);
 
-			if($primary_key != null) {
+			if ($primary_key != null) {
 				$query .= ', PRIMARY KEY (`' . $primary_key . '`) ';
 			}
 			
@@ -156,15 +166,15 @@
 			
 			$query .= 'ENGINE=InnoDB DEFAULT CHARSET=utf8 ';
 			
-			if($auto_increment) {
+			if ($auto_increment) {
 				$query .= 'AUTO_INCREMENT = 1 ';
 			}
 			
 			$result = mysql_query($query);
 		
-			if(!$this->checkError($result)){
-				//$this->table = $table;
-			}
+			$this->table = $table;
+			
+			return $this;
 		}
 		
 		public function getColumns() {
@@ -176,7 +186,7 @@
 				while($record = mysql_fetch_array($result)) {
 					$columns[] = $record['Field'];
 					
-					if($record['Key'] == 'PRI') {
+					if ($record['Key'] == 'PRI') {
 						$this->primary_key = $record['Field'];
 					}
 				}
@@ -226,6 +236,19 @@
 		}
 	
 		public function load($column, $value = null) {
+			if (is_array($column)){
+				if (isset($column['value'])) {
+					$value = $column['value'];
+				}
+				
+				if (isset($column['column'])) {
+					$column = $column['column'];
+				}
+				else {
+					$column = $this->primary_key;
+				}
+			}
+			
 			if ($value == null) {
 				$value = $column;
 				$column = $this->primary_key;
@@ -246,7 +269,8 @@
 				
 				$this->data = $data;
 				$this->last_query = $query;
-				return $data;
+				
+				return $this;
 			}
 		}
 		
@@ -262,7 +286,7 @@
 		public function create() {
 			$data = $this->secureData();
 		
-			if(empty($this->columns)) {
+			if (empty($this->columns)) {
 				$this->columns = $this->getColumns();
 			}
 			
@@ -273,7 +297,7 @@
 		
 			$vals = Array();
 			foreach($this->columns as $key) {
-				if(@$data[$key] != '') {
+				if (@$data[$key] != '') {
 					array_push($vals, "'".$data[$key]."'");
 				}
 				else{
@@ -287,6 +311,8 @@
 			$this->checkError($result);
 		
 			$this->last_query = $query;
+			
+			return $this;
 		}
 		
 		public function update() {
@@ -306,6 +332,8 @@
 			$this->checkError($result);
 			
 			$this->last_query = $query;
+			
+			return $this;
 		}
 		
 		public function delete() {
@@ -317,6 +345,8 @@
 			$this->checkError($result);
 			
 			$this->last_query = $query;
+			
+			return $this;
 		}
 		
 		public function read() {
@@ -336,23 +366,25 @@
 		}
 				
 		public function dropDatabase($database = null) {
-			if($database == null) $database = $this->database;
+			if ($database == null) $database = $this->database;
 			
 			$query = "DROP DATABASE IF EXISTS " . $database;
 			$result = mysql_query($query);
 			
-			if(!$this->checkError($result) && $database == $this->database) {
+			if (!$this->checkError($result) && $database == $this->database) {
 				$this->database = null;
 			}
+			
+			return $this;
 		}
 		
 		public function createDatabase($database = null) {
 			$query = "CREATE DATABASE IF NOT EXISTS " . $database;
 			$result = mysql_query($query);
 				
-			if(!$this->checkError($result)){
-				//$this->database = $database;
-			}
+			$this->checkError($result);
+			
+			return $this;
 		}
 		
 		public function getDatabase() {
@@ -365,6 +397,8 @@
 			$query = mysql_select_db($database, $this->link);
 			
 			$this->checkError($result);
+			
+			return $this;
 		}
 	}
 ?>

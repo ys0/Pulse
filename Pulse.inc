@@ -45,9 +45,26 @@
 			return $this;
 		}
 		
-		public function connect($database, $host, $user, $password) {
+		public function connect($database, $host, $user, $password, $table = null) {
+			if(is_array($database)) {
+				if(isset($database['database']) && isset($database['host']) && isset($database['username']) && isset($database['password'])) {
+					$host = $database['host'];
+					$user = $database['username'];
+					$password = $database['password'];
+					$database = $database['database'];
+				}
+				
+				if(isset($database['table'])) {
+					$this->table = $database['table'];
+				}
+			}
+			
 			$this->link = mysql_connect($host, $user, $password);
 			$query = mysql_select_db($database, $this->link);
+			
+			if($table != null) {
+				$this->table = $table;
+			}
 			
 			$this->checkError($query);
 			
@@ -283,7 +300,11 @@
 			return $data;
 		}
 		
-		public function create() {
+		public function create($array) {
+			if(!empty($array) && is_array($array)) {
+				$this->data = $array;
+			}
+			
 			$data = $this->secureData();
 		
 			if (empty($this->columns)) {

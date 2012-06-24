@@ -400,5 +400,23 @@
 			
 			return $this;
 		}
+	
+		public function limit($limit) {
+			$this->appendQuery(limit);
+			
+			return $this;
+		}
+		
+		public function where($where) {
+			$this->appendQuery($where);
+			
+			return $this;
+		}
+		
+		public function appendQuery($append) {
+			$this->append .= ' ' . $append . ' ';
+				
+			return $this;
+		}
 	}
 ?>
